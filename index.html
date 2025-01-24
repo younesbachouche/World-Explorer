@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Country Information with Map</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      background-color: #f4f4f9;
+    }
+    #sidebar {
+      width: 300px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+    #sidebar-header {
+      padding: 15px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    #sidebar h2 {
+      text-align: center;
+      color: #444;
+      margin: 0 0 15px 0;
+      font-size: 20px;
+    }
+    #search {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 2px solid #0077cc;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    #search:focus {
+      border-color: #005bb5;
+    }
+    #countries-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .country-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .country-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .country-card img {
+      width: 50px;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .country-card h3 {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #333;
+    }
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+    #footer {
+      text-align: center;
+      padding: 10px;
+      background: white;
+      border-top: 1px solid #ddd;
+      font-size: 14px;
+    }
+    #footer a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+    #footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar for country list -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h2>Countries</h2>
+      <input type="text" id="search" placeholder="Search for a country...">
+    </div>
+    <div id="countries-grid"></div>
+    <div id="footer">
+      Made with ❤️ by <a href="https://github.com/younesbachouche" target="_blank">Younes Bachouche</a>
+    </div>
+  </div>
+
+  <!-- Map container -->
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Initialize the map
+    const map = L.map('map').setView([20, 0], 2); // Default view: world map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fetch all countries data from the REST Countries API
+    async function fetchCountries() {
+      try {
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        const data = await response.json();
+        // Sort countries alphabetically by name
+        data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        displayCountries(data);
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+      }
+    }
+
+    // Display countries in the grid
+    function displayCountries(countries) {
+      const countriesGrid = document.getElementById('countries-grid');
+      countriesGrid.innerHTML = ''; // Clear previous content
+
+      countries.forEach(country => {
+        const card = document.createElement('div');
+        card.className = 'country-card';
+        card.addEventListener('click', () => showCountryOnMap(country));
+
+        const flag = document.createElement('img');
+        flag.src = country.flags.png;
+        flag.alt = `Flag of ${country.name.common}`;
+
+        const name = document.createElement('h3');
+        name.textContent = country.name.common;
+
+        card.appendChild(flag);
+        card.appendChild(name);
+        countriesGrid.appendChild(card);
+      });
+    }
+
+    // Show the selected country on the map
+    function showCountryOnMap(country) {
+      const latlng = country.latlng; // Get latitude and longitude
+      if (latlng && latlng.length === 2) {
+        map.setView(latlng, 5); // Zoom to the country
+        L.marker(latlng).addTo(map)
+          .bindPopup(`
+            <b>${country.name.common}</b><br>
+            Capital: ${country.capital ? country.capital[0] : 'N/A'}<br>
+            Area: ${country.area ? country.area.toLocaleString() + ' km²' : 'N/A'}<br>
+            Currency: ${country.currencies ? Object.values(country.currencies)[0].name : 'N/A'}<br>
+            Population: ${country.population ? country.population.toLocaleString() : 'N/A'}
+          `)
+          .openPopup();
+      } else {
+        alert('Location data not available for this country.');
+      }
+    }
+
+    // Search functionality
+    document.getElementById('search').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.country-card');
+
+      cards.forEach(card => {
+        const countryName = card.querySelector('h3').textContent.toLowerCase();
+        if (countryName.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Fetch and display countries on page load
+    fetchCountries();
+  </script>
+</body>
+</html>
