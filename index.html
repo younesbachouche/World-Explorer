@@ -37,14 +37,14 @@
       font-size: 20px;
     }
     #search {
-      width: calc(100% - 20px); /* Adjusted width to fit within the sidebar */
-      padding: 8px 10px; /* Slightly smaller padding */
+      width: calc(100% - 20px);
+      padding: 8px 10px;
       font-size: 14px;
       border: 2px solid #0077cc;
       border-radius: 8px;
       outline: none;
       transition: border-color 0.3s;
-      box-sizing: border-box; /* Ensure padding is included in the width */
+      box-sizing: border-box;
     }
     #search:focus {
       border-color: #005bb5;
@@ -53,6 +53,9 @@
       flex: 1;
       overflow-y: auto;
       padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
     }
     .country-card {
       background: white;
@@ -95,6 +98,47 @@
     }
     #footer a:hover {
       text-decoration: underline;
+    }
+
+    /* Mobile-friendly adjustments */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      #sidebar {
+        width: 100%;
+        height: 40vh;
+        box-shadow: none;
+      }
+      #countries-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        padding: 5px;
+      }
+      .country-card {
+        padding: 5px;
+      }
+      .country-card img {
+        width: 40px;
+      }
+      .country-card h3 {
+        font-size: 12px;
+        margin: 2px 0;
+      }
+      #map {
+        height: 60vh;
+      }
+      #sidebar-header {
+        padding: 10px;
+      }
+      #search {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+      #footer {
+        font-size: 12px;
+        padding: 5px;
+      }
     }
   </style>
 </head>
