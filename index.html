@@ -229,9 +229,11 @@
       try {
         const response = await fetch('https://restcountries.com/v3.1/all');
         const data = await response.json();
+        // Filter out Israel
+        const filteredData = data.filter(country => country.name.common !== 'Israel');
         // Sort countries alphabetically by name
-        data.sort((a, b) => a.name.common.localeCompare(b.name.common));
-        displayCountries(data);
+        filteredData.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        displayCountries(filteredData);
       } catch (error) {
         console.error('Error fetching countries:', error);
       }
