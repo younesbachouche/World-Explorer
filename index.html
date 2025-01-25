@@ -231,9 +231,20 @@
         const data = await response.json();
         // Filter out Israel
         const filteredData = data.filter(country => country.name.common !== 'Israel');
+        // Modify Palestine's capital to "Al Quds" and remove currency
+        const updatedData = filteredData.map(country => {
+          if (country.name.common === 'Palestine') {
+            return {
+              ...country,
+              capital: ['Al Quds'],
+              currencies: undefined // Remove currency data
+            };
+          }
+          return country;
+        });
         // Sort countries alphabetically by name
-        filteredData.sort((a, b) => a.name.common.localeCompare(b.name.common));
-        displayCountries(filteredData);
+        updatedData.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        displayCountries(updatedData);
       } catch (error) {
         console.error('Error fetching countries:', error);
       }
